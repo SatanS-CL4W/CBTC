@@ -1,7 +1,7 @@
 Steps and Code Explanation
 1) Define Data Structures: We'll define Rust structs to represent the key-value pairs and the JSON structure.
 
-2) Parse the Encoded String: We'll create a function to parse the encoded string based on the format rules provided.
+2) Parse the Encoded String: We'll create a function to parse the encoded string.
 
 3) Translate to JSON: After parsing, we'll convert the parsed data into a JSON structure.
 
@@ -13,7 +13,7 @@ use std::io;
 fn parse_encoded_string(encoded_string: &str) -> Result<String, String> {
     let mut result = String::new();
     let mut pairs = encoded_string.split('#');
-    pairs.next(); // Skip the first part
+    pairs.next(); 
 
     for pair in pairs {
         let parts: Vec<&str> = pair.split('|').collect();
