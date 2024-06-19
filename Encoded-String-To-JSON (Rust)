@@ -1,0 +1,93 @@
+use serde_json::json;
+use std::collections::HashMap;
+use std::io;
+
+fn parse_encoded_string(encoded_string: &str) -> Result<String, String> {
+    let mut result = String::new();
+    let mut pairs = encoded_string.split('#');
+    pairs.next(); // Skip the first part
+
+    for pair in pairs {
+        let parts: Vec<&str> = pair.split('|').collect();
+        if parts.len() != 3 {
+            return Err("Invalid encoded string".to_string());
+        }
+
+        let value_type = parts[0];
+        let key = parts[1];
+        let value = parts[2];
+
+        let is_array = value_type.chars().next().unwrap() == '1';
+        let value_type = value_type.chars().skip(1).next().unwrap().to_string().parse::<u8>().unwrap();
+
+        match value_type {
+            0 => {
+                if is_array {
+                    let mut dates = Vec::new();
+                    for date in value.split(',') {
+                        dates.push(date.to_string());
+                    }
+                    result.push_str(&format!("\"{}\": [{}],\n", key, dates.join(",")));
+                } else {
+                    result.push_str(&format!("\"{}\": \"{}\",\n", key, value));
+                }
+            }
+            1 => {
+                if is_array {
+                    let mut numbers = Vec::new();
+                    for number in value.split(',') {
+                        numbers.push(number.to_string());
+                    }
+                    result.push_str(&format!("\"{}\": [{}],\n", key, numbers.join(",")));
+                } else {
+                    result.push_str(&format!("\"{}\": \"{}\",\n", key, value));
+                }
+            }
+            2 => {
+                if is_array {
+                    let mut strings = Vec::new();
+                    for string in value.split(',') {
+                        strings.push(string.to_string());
+                    }
+                    result.push_str(&format!("\"{}\": [\"{}\"],\n", key, strings.join(",")));
+                } else {
+                    result.push_str(&format!("\"{}\": \"{}\",\n", key, value));
+                }
+            }
+            3 => {
+                if is_array {
+                    let mut bools = Vec::new();
+                    for bool in value.split(',') {
+                        match bool {
+                            "y" | "Y" | "t" | "T" => bools.push("true".to_string()),
+                            "n" | "N" | "f" | "F" => bools.push("false".to_string()),
+                            _ => return Err("Invalid boolean value".to_string()),
+                        }
+                    }
+                    result.push_str(&format!("\"{}\": [{}],\n", key, bools.join(",")));
+                } else {
+                    match value {
+                        "y" | "Y" | "t" | "T" => result.push_str(&format!("\"{}\": \"true\",\n", key)),
+                        "n" | "N" | "f" | "F" => result.push_str(&format!("\"{}\": \"false\",\n", key)),
+                        _ => return Err("Invalid boolean value".to_string()),
+                    }
+                }
+            }
+            _ => return Err("Invalid value type".to_string()),
+        }
+    }
+
+    Ok(result)
+}
+
+fn main() {
+    println!("Enter the encoded string:");
+    let mut encoded_string = String::new();
+    io::stdin().read_line(&mut encoded_string).expect("Failed to read line");
+    encoded_string = encoded_string.trim().to_string();
+
+    match parse_encoded_string(&encoded_string) {
+        Ok(result) => println!("{{\n{}}}", result),
+        Err(error) => println!("Error: {}", error),
+    }
+}
