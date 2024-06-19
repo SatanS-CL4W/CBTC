@@ -1,3 +1,11 @@
+Steps and Code Explanation
+1) Define Data Structures: We'll define Rust structs to represent the key-value pairs and the JSON structure.
+
+2) Parse the Encoded String: We'll create a function to parse the encoded string based on the format rules provided.
+
+3) Translate to JSON: After parsing, we'll convert the parsed data into a JSON structure.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 use serde_json::json;
 use std::collections::HashMap;
 use std::io;
